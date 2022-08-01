@@ -1,1 +1,8 @@
+[BASIC]
+
+good-names=i,j,k,ex,Run,_
+bad-names=foo,bar,baz,toto,tutu,tata
 docstring-min-length=5
+
+[FORMAT]
+max-line-length=100
