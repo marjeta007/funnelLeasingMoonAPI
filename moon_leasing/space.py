@@ -1,6 +1,5 @@
 import os
-import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 import requests
@@ -49,6 +48,7 @@ class SatelliteData:
 
     @classmethod
     async def stats(cls):
+        """Calculate altitude stats for the past 5 minutes."""
         data = await cls._get_latest_data_list(minutes=5)
         altitudes = [float(item.altitude) for item in data]
         if not altitudes:
@@ -69,6 +69,7 @@ class SatelliteData:
 
     @classmethod
     async def health(cls):
+        """Determine Satellite's "health" based on altitude."""
         message = cls.messages["ok"]
 
         data = await cls._get_latest_data_list(minutes=1)
@@ -113,6 +114,7 @@ class SatelliteData:
 
     @classmethod
     async def refresh(cls):
+        """Get the latest altitude reading and store into DB."""
         data = await cls._get_last_update()
 
         try:
