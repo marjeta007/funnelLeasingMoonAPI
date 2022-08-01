@@ -1,4 +1,6 @@
 """Tests for space.py"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,wrong-import-position,protected-access
+
 import os
 import unittest
 from datetime import datetime, timedelta, timezone
@@ -21,10 +23,10 @@ from moon_leasing.db.config import (
     async_session,
     Base,
     engine,
-)  # pylint: disable=wrong-import-position
-from moon_leasing.db.crud import SatelliteDB  # pylint: disable=wrong-import-position
-from moon_leasing.settings import Settings  # pylint: disable=wrong-import-position
-from moon_leasing.space import SatelliteData  # pylint: disable=wrong-import-position
+)
+from moon_leasing.db.crud import SatelliteDB
+from moon_leasing.settings import Settings
+from moon_leasing.space import SatelliteData
 
 logger = Settings.get_logger(__name__)
 

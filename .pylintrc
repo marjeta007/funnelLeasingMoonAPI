@@ -6,3 +6,6 @@ docstring-min-length=5
 
 [FORMAT]
 max-line-length=120
+
+[MESSAGES CONTROL]
+disable=broad-except
