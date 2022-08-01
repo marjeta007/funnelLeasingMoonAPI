@@ -1,13 +1,13 @@
+"""ENV settings and logging."""
 import logging
 import os
-import sys
 from pathlib import Path
-from typing import Type, Union
+from typing import Union
 
 from dotenv import dotenv_values, find_dotenv, load_dotenv
 
 
-class _Settings:
+class _Settings:  # pylint: disable=too-few-public-methods
     log_format = "%(threadName)s-%(asctime)s-%(relativeCreated)4d-%(name)s [%(levelname)s] %(module)s:%(lineno)d - %(message)s"
     package_name = Path(__file__).resolve().parent.name
     _env_file = find_dotenv(raise_error_if_not_found=False)

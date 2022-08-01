@@ -1,8 +1,8 @@
 """FastAPI app which provides endpoints for the Satellite stats and health."""
 from typing import Dict
 
-from fastapi import FastAPI  # , BackgroundTasks
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from fastapi import FastAPI  # , BackgroundTasks
 from fastapi.responses import RedirectResponse
 
 from moon_leasing.db.config import Base, engine

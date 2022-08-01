@@ -1,3 +1,4 @@
+"""Tests for space.py"""
 import os
 import unittest
 from datetime import datetime, timedelta, timezone
@@ -8,7 +9,7 @@ from unittest import mock
 import dateutil
 import pandas as pd
 
-os.environ.update(
+os.environ.update(  # Setup env before importing moon_leasing
     dict(
         TEST_DATABASE_URL="sqlite+aiosqlite:///./temp_test_satellite.db",
         TEST_SATELLITE_REALTIME_URL="https://foo.bar/api/data",
@@ -16,10 +17,14 @@ os.environ.update(
     )
 )
 
-from moon_leasing.db.config import async_session, Base, engine
-from moon_leasing.db.crud import SatelliteDB
-from moon_leasing.settings import Settings
-from moon_leasing.space import SatelliteData
+from moon_leasing.db.config import (
+    async_session,
+    Base,
+    engine,
+)  # pylint: disable=wrong-import-position
+from moon_leasing.db.crud import SatelliteDB  # pylint: disable=wrong-import-position
+from moon_leasing.settings import Settings  # pylint: disable=wrong-import-position
+from moon_leasing.space import SatelliteData  # pylint: disable=wrong-import-position
 
 logger = Settings.get_logger(__name__)
 
@@ -30,8 +35,9 @@ df = pd.read_csv(test_dir / "good_data.csv")
 good_data = df.to_dict(orient="records")
 
 
-class MockResponse:
+class MockResponse:  # pylint: disable=too-few-public-methods
     """For simulating HTTP request response."""
+
     def __init__(
         self, json_data=None, status_code=200, last_updated=None, altitude=None
     ):
@@ -177,8 +183,7 @@ class TestSatellite(unittest.IsolatedAsyncioTestCase):
                     print("!!!!!")
                 self.assertEqual(health, case.health)
 
-    # @mock.patch("moon_leasing.space.requests")
-    async def test_stats(self):
+    async def test_stats(self):  # pylint: disable=line-too-long
         await self.reset_db()
         now = datetime.utcnow()
         for idx, record in enumerate(good_data):
@@ -202,39 +207,15 @@ class TestSatellite(unittest.IsolatedAsyncioTestCase):
             name = f"{idx:2}-[{record.get('row')}]-{record.get('minutes')}:{record.get('seconds')}"
             with self.subTest(f"min-{name}"):
                 if record["min"] != stats["minimum"]:
-                    print(
-                        "ERROR HERE: min",
-                        record["min"] == stats["minimum"],
-                        record["min"],
-                        stats["minimum"],
-                        record,
-                    )
-                    print(stats["altitudes"])
-                logger.error(f"\nStats:{repr(stats)}\nrecord:{repr(record)}")
+                    logger.error(f"\nStats:{repr(stats)}\nrecord:{repr(record)}")
                 self.assertAlmostEqual(record["min"], stats["minimum"], 2)
             with self.subTest(f"max-{name}"):
                 if record["max"] != stats["maximum"]:
-                    print(
-                        "ERROR HERE: max",
-                        record["max"] == stats["maximum"],
-                        record["max"],
-                        stats["maximum"],
-                        record,
-                    )
-                    print(stats["altitudes"])
-                logger.error(f"\nStats:{repr(stats)}\nrecord:{repr(record)}")
+                    logger.error(f"\nStats:{repr(stats)}\nrecord:{repr(record)}")
                 self.assertAlmostEqual(record["max"], stats["maximum"], 2)
             with self.subTest(f"avg-{name}"):
                 if record["avg"] != stats["average"]:
-                    print(
-                        "ERROR HERE: avg",
-                        record["avg"] == stats["average"],
-                        record["avg"],
-                        stats["average"],
-                        record,
-                    )
-                    print(stats["altitudes"])
-                logger.error(f"\nStats:{repr(stats)}\nrecord:{repr(record)}")
+                    logger.error(f"\nStats:{repr(stats)}\nrecord:{repr(record)}")
                 self.assertAlmostEqual(record["avg"], stats["average"], 2)
 
             async with async_session() as session:
@@ -249,14 +230,6 @@ class TestSatellite(unittest.IsolatedAsyncioTestCase):
 
             with self.subTest(f"all-{name}"):
                 if record["all"] != len(all_data):
-                    print(
-                        "ERROR HERE: all",
-                        record["all"] == len(all_data),
-                        record["all"],
-                        len(all_data),
-                        record,
-                    )
-                    # print("all data:", all_data)
                     print("all data:", "\n".join([str(item) for item in all_data]))
                     print("=====================")
                     logger.error(
@@ -269,16 +242,6 @@ class TestSatellite(unittest.IsolatedAsyncioTestCase):
                 count = record["count"]
             with self.subTest(f"count-{name}"):
                 if count != len(latest_data):
-                    print(
-                        "ERROR HERE: count",
-                        count == len(latest_data),
-                        count,
-                        len(latest_data),
-                        record,
-                    )
-                    print(
-                        "latest data:", "\n".join([repr(item) for item in latest_data])
-                    )
                     logger.error(
                         f"\nStats:{repr(stats)}\nrecord:{repr(record)}\nlatest data:{repr(latest_data)}"
                     )
@@ -292,18 +255,14 @@ class TestSatellite(unittest.IsolatedAsyncioTestCase):
     def test_d(self):
         naive = datetime(2022, 7, 27, 4, 49, 37, 681136)
         utc = datetime(2022, 7, 27, 4, 49, 37, 681136, tzinfo=timezone.utc)
-        naive_str = naive.isoformat()
-        utc_str = utc.isoformat()
-        a = f"naive_str={naive_str}    utc_str={utc_str}"
+
         naive_str = "2022-07-27T04:49:37.681136"
         z_str = "2022-07-27T04:49:37.681136Z"
         utc_str = "2022-07-27T04:49:37.681136+00:00"
         utc_1 = "2022-07-27T05:49:37.681136+01:00"
         utc_2 = "2022-07-27T06:49:37.681136+02:00"
         utc_3 = "2022-07-27T01:49:37.681136-03:00"
-        b = f"naive_str={naive_str}    utc_str={utc_str}"
-        with self.subTest("tz"):
-            self.assertEqual(a, b)
+
         # noinspection PyUnresolvedReferences
         for name, date_in in [
             ("naive", naive),

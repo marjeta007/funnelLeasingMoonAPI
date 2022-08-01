@@ -19,27 +19,31 @@ logger = Settings.get_logger(__name__)
 
 
 class SatelliteDB:
-    count = 0
     """CRUD operations for SatelliteStatusTable"""
+
+    count = 0
 
     def __init__(self, db_session: Optional[Session] = None):
         self.db_session = db_session or async_session
 
     @staticmethod
     def to_naive_datetime(date_str: Union[str, datetime]) -> datetime:
+        """Convert given value to naive UTC datetime (time in UTC without timezone info)."""
         if isinstance(date_str, str):
             date_obj = dateutil.parser.parse(date_str)
         elif isinstance(date_str, datetime):
             date_obj = date_str
         else:
             date_obj = datetime(date_str)
+
         if date_obj.tzinfo:
             # Calling .astimezone on a naive object, assumes it's in current timezone
             return date_obj.astimezone(timezone.utc).replace(tzinfo=None)
-        else:
-            return date_obj
+        return date_obj
 
-    async def create_entry(self, last_updated: Union[str, datetime], altitude: str):
+    async def create_entry(
+        self, last_updated: Union[str, datetime], altitude: str, **_kwargs
+    ):
         """Insert new data record into SatelliteStatusTable."""
         self.__class__.count += 1
 
@@ -49,7 +53,7 @@ class SatelliteDB:
         ] = f"{os.environ.get('ins')}\t {last_updated.minute % 10}:{last_updated.second}-{altitude}"
         status = SatelliteStatusTable(
             last_updated=last_updated, altitude=altitude
-        )  # , **kwargs)
+        )  # , **_kwargs)
         print("----> Creating: ", repr(status))
         try:
             added = self.db_session.add(status)
@@ -57,24 +61,27 @@ class SatelliteDB:
             flushed = await self.db_session.flush()
             print(f"flushed: {flushed}")
             os.environ["ins"] = f"{os.environ.get('ins')}+"
-        except IntegrityError as e:
-            os.environ["ins"] = f"{os.environ.get('ins')}={e}"
-            logger.error(e)
-            pass  # We attempted to insert same altitude reading twice. Ignoring
-        except Exception as e:
-            os.environ["ins"] = f"{os.environ.get('ins')}={type(e)}:{e}"
-            logger.error(e)
-            pass  # We attempted to insert same altitude reading twice. Ignoring
+        except IntegrityError as ex:
+            os.environ["ins"] = f"{os.environ.get('ins')}={ex}"
+            logger.info(f"Attempted duplicate insert ({ex})")
+            # We attempted to insert same altitude reading twice. Ignoring
+        except Exception as ex:
+            os.environ["ins"] = f"{os.environ.get('ins')}={type(ex)}:{ex}"
+            logger.error(f"Error inserting {status} - {type(ex)}:{ex}")
         return status
 
     async def get_all(self) -> List[SatelliteStatusTable]:
         """Retrieve all records from SatelliteStatusTable."""
         query = await self.db_session.execute(
-            select(SatelliteStatusTable).order_by(desc(SatelliteStatusTable.last_updated))
+            select(SatelliteStatusTable).order_by(
+                desc(SatelliteStatusTable.last_updated)
+            )
         )
         return query.scalars().all()
 
-    async def get_latest(self, minutes: Optional[int] = 5) -> List[SatelliteStatusTable]:
+    async def get_latest(
+        self, minutes: Optional[int] = 5
+    ) -> List[SatelliteStatusTable]:
         """Retrieve records from the last few minutes (default=5)."""
 
         if not minutes or minutes < 0:
@@ -127,11 +134,14 @@ class SatelliteDB:
     async def get_last_one(self) -> List[SatelliteStatusTable]:
         """Retrieve the most recent record."""
         query = await self.db_session.execute(
-            select(SatelliteStatusTable).order_by(desc(SatelliteStatusTable.last_updated))
+            select(SatelliteStatusTable).order_by(
+                desc(SatelliteStatusTable.last_updated)
+            )
         )
         return query.scalars().first()
 
-    # async def update_entry(self, id: int, last_updated: Union[str, datetime] = "", altitude: str = "", **kwargs):
+    # async def update_entry(self, id: int, last_updated: Union[str, datetime] = "",
+    #                        altitude: str = "", **kwargs):
     # """Update..."""
     #     q = update(SatelliteStatusTable).where(SatelliteStatusTable.id == book_id)
     #     if last_updated:

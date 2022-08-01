@@ -1,3 +1,4 @@
+"""DB table to keep Satellite's altitude updates."""
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, DateTime, Float

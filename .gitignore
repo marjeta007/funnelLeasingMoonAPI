@@ -1,6 +1,7 @@
 tmp_*
 temp_*
 .idea/
+.venv
 .env
 *.db
 __pycache__

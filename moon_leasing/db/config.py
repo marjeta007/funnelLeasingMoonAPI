@@ -1,3 +1,4 @@
+"""DB setup with sqlalchemy."""
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
