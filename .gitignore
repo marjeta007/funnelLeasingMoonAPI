@@ -1,0 +1,6 @@
+tmp_*
+temp_*
+.idea/
+.env
+*.db
+__pycache__
